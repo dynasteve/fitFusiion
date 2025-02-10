@@ -45,3 +45,15 @@ class UserImage(forms.ModelForm):
         models = UploadImage  
         # It includes all the fields of model  
         fields = '__all__'  
+        
+class UploadMeasurementForm(forms.ModelForm):
+    class Meta:
+        model = Measurement
+        fields = ['image1', 'image2']
+
+class ManualMeasurementForm(forms.ModelForm):
+    class Meta:
+        model = Measurement
+        exclude = ['image1', 'image2']  # No images needed
+
+

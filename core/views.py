@@ -7,7 +7,7 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.decorators import login_required
 from .forms import SignupForm
 from .forms import MeasurementForm
-from .forms import ManualMeasurementForm
+from .forms import UploadMeasurementForm, ManualMeasurementForm
 from .models import Measurement
 from django.shortcuts import get_object_or_404
 
@@ -21,6 +21,8 @@ from django.views.decorators.csrf import csrf_exempt
 from django.core.files.storage import default_storage
 from .forms import UserImage
 from .models import UploadImage  
+from .forms import UploadMeasurementForm, ManualMeasurementForm
+
 
 
 
@@ -61,24 +63,66 @@ def logout_view(request):
     logout(request)
     return redirect('home')
     
+#@login_required
+#def new_measurement(request):
+#    if request.method == "POST":
+#        form = MeasurementForm(request.POST, request.FILES)  # Include request.FILES
+#
+#        if form.is_valid():
+#            measurement = form.save(commit=False)
+#            measurement.user = request.user  # Assign the user
+#            measurement.image1 = form.cleaned_data["image1"]
+#            measurement.image2 = form.cleaned_data["image2"]
+#            measurement.save()  # Save with images
+#
+#            return redirect("loading_screen")
+#
+#    else:
+#        form = MeasurementForm()
+#
+#    return render(request, "core/new_measurement.html", {"form": form})
+
 @login_required
 def new_measurement(request):
-    if request.method == "POST":
-        form = MeasurementForm(request.POST, request.FILES)  # Include request.FILES
+    return render(request, "core/new_measurement.html")
 
+@login_required
+def upload_measurement(request):
+    if request.method == "POST":
+        form = MeasurementForm(request.POST, request.FILES)
         if form.is_valid():
             measurement = form.save(commit=False)
             measurement.user = request.user  # Assign the user
-            measurement.image1 = form.cleaned_data["image1"]
-            measurement.image2 = form.cleaned_data["image2"]
-            measurement.save()  # Save with images
-
+            measurement.image1 = request.FILES.get("image1")
+            measurement.image2 = request.FILES.get("image2")
+            measurement.save()
             return redirect("loading_screen")
-
     else:
         form = MeasurementForm()
 
-    return render(request, "core/new_measurement.html", {"form": form})
+    return render(request, "core/upload_measurement.html", {"form": form})
+
+@login_required
+def manual_measurement(request):
+    if request.method == "POST":
+        form = ManualMeasurementForm(request.POST)
+        if form.is_valid():
+            measurement = form.save(commit=False)
+            measurement.user = request.user
+            measurement.save()
+            return redirect("loading_screen")
+    else:
+        form = MeasurementForm()
+
+    return render(request, "core/manual_measurement.html", {"form": form})
+
+@login_required
+def kinect_measurement(request):
+    if request.method == "POST":
+        # Kinect logic here (if needed)
+        return redirect("loading_screen")
+
+    return render(request, "core/kinect_measurement.html")
 
 
 @login_required
