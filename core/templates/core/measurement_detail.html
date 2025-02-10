@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Measurement Details</title>
+</head>
+<body>
+    <h2>Measurement Details</h2>
+    <p><strong>Date:</strong> {{ measurement.created_at }}</p>
+    <p><strong>Type:</strong> {{ measurement.measurement_type }}</p>
+
+        <h3>Measurements</h3>
+        {% if measurement.data %}
+            <ul>
+                {% for key, value in measurement.data.items %}
+                    <li><strong>{{ key }}:</strong> {{ value }}</li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No measurement data available.</p>
+        {% endif %}
+
+
+    <a href="/">Back to Home</a>
+    
+    {% block content %}
+    <h2>Your Measurements</h2>
+    <ul>
+        {% for measurement in measurements %}
+        <li>
+            <strong>Date:</strong> {{ measurement.created_at }}<br>
+            Chest: {{ measurement.upper_arm_length }}<br>
+            Waist: {{ measurement.lower_arm_length }}<br>
+            Hips: {{ measurement.upper_leg_length }}<br>
+            Arms: {{ measurement.lower_leg_lengths }}<br>
+            Legs: {{ measurement.arm_girth }}
+        </li>
+        {% endfor %}
+    </ul>
+    {% endblock %}
+    
+</body>
+</html>

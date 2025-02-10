@@ -1,0 +1,25 @@
+{% block content %}
+    <div class="container mt-5">
+        <h1>Welcome to Fit-Fusion</h1>
+
+        {% if user.is_authenticated %}
+            <p>Hi, {{ user.username }}!</p>
+            <a href="{% url 'logout' %}" class="btn btn-danger">Logout</a>
+        {% else %}
+            <a href="{% url 'login' %}" class="btn btn-primary">Login</a>
+            <a href="{% url 'signup' %}" class="btn btn-secondary">Sign Up</a>
+        {% endif %}
+
+        <a href="{% url 'new_measurement' %}" class="btn btn-success mt-3">+ New Measurement</a>
+
+        <h2 class="mt-4">Past Measurements</h2>
+            <ul class="list-group measurement-list">
+        {% for measurement in measurements %}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                <a href="{% url 'measurement_detail' measurement.id %}">{{ measurement.created_at }} - <strong>{{ measurement.measurement_type }}</strong></a>
+                <a href="{% url 'delete_measurement' measurement.id %}" class="btn btn-sm btn-outline-danger">Delete</a>
+            </li>
+        {% endfor %}
+    </ul>
+    </div>
+{% endblock %}
