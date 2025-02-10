@@ -7,6 +7,9 @@ from django.forms import fields
 from .models import UploadImage 
 
 class MeasurementForm(forms.ModelForm):
+    image1 = forms.ImageField(required=False)  # Ensure Django processes files
+    image2 = forms.ImageField(required=False)
+    
     MEASUREMENT_CHOICES = [
         ('upload', 'Upload Images'),
         ('kinect', 'Use Kinect Data'),

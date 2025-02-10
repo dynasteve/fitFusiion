@@ -64,17 +64,17 @@ def logout_view(request):
 @login_required
 def new_measurement(request):
     if request.method == "POST":
-        form = MeasurementForm(request.POST)
-        if form.is_valid():
-            measurement = form.save(commit=False)  # Don't save yet
-            
-            # Debugging: Print the user information
-            print("Current user:", request.user)
-            print("User authenticated:", request.user.is_authenticated)
+        form = MeasurementForm(request.POST, request.FILES)  # Include request.FILES
 
+        if form.is_valid():
+            measurement = form.save(commit=False)
             measurement.user = request.user  # Assign the user
-            measurement.save()  # Now save
-            return redirect("loading_screen")  # Adjust as needed
+            measurement.image1 = form.cleaned_data["image1"]
+            measurement.image2 = form.cleaned_data["image2"]
+            measurement.save()  # Save with images
+
+            return redirect("loading_screen")
+
     else:
         form = MeasurementForm()
 
@@ -154,36 +154,39 @@ def upload_result(request):
         return JsonResponse({"message": "File uploaded successfully", "path": path})
     return JsonResponse({"error": "No file received"}, status=400)
     
-@csrf_exempt  # Disable CSRF protection for testing (only use in development)
+@csrf_exempt
 def upload_image(request):
-    if request.method == "POST" and request.FILES.get("image"):
-        file = request.FILES["image"]  # Get the uploaded file
+    if request.method == "POST":
+        print("FILES RECEIVED:", request.FILES)  # Debugging
+
+        if "image1" not in request.FILES and "image2" not in request.FILES:
+            return JsonResponse({"error": "No images uploaded"}, status=400)
+
         upload_folder = os.path.join(settings.MEDIA_ROOT, "uploads")
         os.makedirs(upload_folder, exist_ok=True)  # Ensure the folder exists
 
-        file_path = os.path.join(upload_folder, file.name)
+        saved_files = []
 
-        # Save the file
-        with open(file_path, "wb") as destination:
-            for chunk in file.chunks():
-                destination.write(chunk)
+        # Handle image1
+        if "image1" in request.FILES:
+            image1 = request.FILES["image1"]
+            file_path1 = os.path.join(upload_folder, image1.name)
+            with open(file_path1, "wb") as destination:
+                for chunk in image1.chunks():
+                    destination.write(chunk)
+            saved_files.append(file_path1)
 
-        return JsonResponse({"message": "File uploaded successfully", "path": file_path})
-        
-    if request.method == "POST":
-        print("FILES RECEIVED:", request.FILES)  # Debugging line
-        if 'image1' not in request.FILES:
-            return JsonResponse({"error": "Missing image1"}, status=400)
-        if 'image2' not in request.FILES:
-            return JsonResponse({"error": "Missing image2"}, status=400)
+        # Handle image2
+        if "image2" in request.FILES:
+            image2 = request.FILES["image2"]
+            file_path2 = os.path.join(upload_folder, image2.name)
+            with open(file_path2, "wb") as destination:
+                for chunk in image2.chunks():
+                    destination.write(chunk)
+            saved_files.append(file_path2)
 
-        image1 = request.FILES["image1"]
-        image2 = request.FILES["image2"]
+        return JsonResponse({"message": "Images uploaded successfully", "files": saved_files})
 
-        # Process and save images
-        return JsonResponse({"message": "Images uploaded successfully"})
-
-    return JsonResponse({"error": "No image uploaded"}, status=400)
     
 def image_request(request):  
     if request.method == 'POST':  

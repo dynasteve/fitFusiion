@@ -18,15 +18,16 @@
 <body class="container">
     <h2 class="mt-5">Add a New Measurement</h2>
     
-    <form method="POST" enctype="multipart/form-data">
+    <form method="POST" action="{% url 'new_measurement' %}" enctype="multipart/form-data">
         {% csrf_token %}
         {{ form.measurement_type }}
 
-        <div id="upload-fields" style="display:none;">
+        <div id="upload-fields">
             <label>Upload Images:</label>
-            {{ form.image1 }}
-            {{ form.image2 }}
+            <input type="file" name="image1" id="image1" accept="image/*">
+            <input type="file" name="image2" id="image2" accept="image/*">
         </div>
+
 
         <div id="kinect-fields" style="display:none;">
             <button type="button" class="btn btn-primary">Request Kinect Data</button>
