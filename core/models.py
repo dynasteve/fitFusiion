@@ -21,8 +21,8 @@ class Measurement(models.Model):
 )
 
     # Image Upload Fields
-    image1 = models.ImageField(upload_to='media/uploads', blank=True, null=True)
-    image2 = models.ImageField(upload_to='media/uploads', blank=True, null=True)
+    image1 = models.ImageField(upload_to='uploads', blank=True, null=True)
+    image2 = models.ImageField(upload_to='uploads', blank=True, null=True)
 
     # Manual Measurement Fields
     upper_arm_length = models.FloatField(blank=True, null=True)

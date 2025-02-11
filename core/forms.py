@@ -39,12 +39,10 @@ class SignupForm(UserCreationForm):
         model = User
         fields = ['username', 'email', 'password1', 'password2']
         
-class UserImage(forms.ModelForm):  
-    class meta:  
-        # To specify the model to be used to create form  
-        models = UploadImage  
-        # It includes all the fields of model  
-        fields = '__all__'  
+class UserImageForm(forms.ModelForm):  # Fix class name
+    class Meta:
+        model = UploadImage  # Fix 'models' ? 'model'
+        fields = '__all__'
         
 class UploadMeasurementForm(forms.ModelForm):
     class Meta:
@@ -54,6 +52,6 @@ class UploadMeasurementForm(forms.ModelForm):
 class ManualMeasurementForm(forms.ModelForm):
     class Meta:
         model = Measurement
-        exclude = ['image1', 'image2']  # No images needed
+        exclude = ['user', 'image1', 'image2', 'data', 'created_at', 'measurement_type']
 
 

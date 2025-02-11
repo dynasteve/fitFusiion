@@ -127,7 +127,7 @@ STATIC_URL = 'static/'
 LOGIN_URL = '/login/'
 
 # Store images in the "uploads" folder inside your Django project
-MEDIA_URL = "media/"
+MEDIA_URL = "/media/"
 MEDIA_ROOT = "/home/stephen/finalYearProject/fitFusiion/media"
 
 # Default primary key field type

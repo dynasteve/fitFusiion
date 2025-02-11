@@ -1,42 +1,79 @@
+{% load static %}
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Measurement Details</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
 </head>
-<body>
-    <h2>Measurement Details</h2>
-    <p><strong>Date:</strong> {{ measurement.created_at }}</p>
-    <p><strong>Type:</strong> {{ measurement.measurement_type }}</p>
+<body class="container">
+    <h2 class="mt-5">Measurement Details</h2>
+    
+    <div class="card mt-3">
+        <div class="card-body">
+            <h5 class="card-title">Measurement Information</h5>
+            <p><strong>Date:</strong> {{ measurement.created_at|date:"F d, Y H:i" }}</p>
+            <p><strong>Measurement Type:</strong> {{ measurement.get_measurement_type_display }}</p>
 
-        <h3>Measurements</h3>
-        {% if measurement.data %}
-            <ul>
-                {% for key, value in measurement.data.items %}
-                    <li><strong>{{ key }}:</strong> {{ value }}</li>
-                {% endfor %}
+            <h5 class="mt-4">Body Measurements</h5>
+            <ul class="list-group">
+                <li class="list-group-item"><strong>Upper Arm Length:</strong> 
+                    {% if measurement.upper_arm_length is not None %} {{ measurement.upper_arm_length }} cm 
+                    {% else %} Not Recorded {% endif %}
+                </li>
+                <li class="list-group-item"><strong>Lower Arm Length:</strong> 
+                    {% if measurement.lower_arm_length is not None %} {{ measurement.lower_arm_length }} cm 
+                    {% else %} Not Recorded {% endif %}
+                </li>
+                <li class="list-group-item"><strong>Upper Leg Length:</strong> 
+                    {% if measurement.upper_leg_length is not None %} {{ measurement.upper_leg_length }} cm 
+                    {% else %} Not Recorded {% endif %}
+                </li>
+                <li class="list-group-item"><strong>Lower Leg Length:</strong> 
+                    {% if measurement.lower_leg_length is not None %} {{ measurement.lower_leg_length }} cm 
+                    {% else %} Not Recorded {% endif %}
+                </li>
+                <li class="list-group-item"><strong>Arm Girth:</strong> 
+                    {% if measurement.arm_girth is not None %} {{ measurement.arm_girth }} cm 
+                    {% else %} Not Recorded {% endif %}
+                </li>
+                <li class="list-group-item"><strong>Torso Length:</strong> 
+                    {% if measurement.torso_length is not None %} {{ measurement.torso_length }} cm 
+                    {% else %} Not Recorded {% endif %}
+                </li>
+                <li class="list-group-item"><strong>Shoulder Girth:</strong> 
+                    {% if measurement.shoulder_girth is not None %} {{ measurement.shoulder_girth }} cm 
+                    {% else %} Not Recorded {% endif %}
+                </li>
+                <li class="list-group-item"><strong>Belly Girth:</strong> 
+                    {% if measurement.belly_girth is not None %} {{ measurement.belly_girth }} cm 
+                    {% else %} Not Recorded {% endif %}
+                </li>
             </ul>
-        {% else %}
-            <p>No measurement data available.</p>
-        {% endif %}
 
+            {% if measurement.image1 or measurement.image2 %}
+                <h5 class="mt-4">Uploaded Images</h5>
+                <div class="row">
+                    {% if measurement.image1 %}
+                        <div class="col-md-6">
+                            <img src="{{ measurement.image1.url }}" class="img-fluid" alt="Uploaded Image 1">
+                        </div>
+                    {% endif %}
+                    {% if measurement.image2 %}
+                        <div class="col-md-6">
+                            <img src="{{ measurement.image2.url }}" class="img-fluid" alt="Uploaded Image 2">
+                        </div>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
 
-    <a href="/">Back to Home</a>
-    
-    {% block content %}
-    <h2>Your Measurements</h2>
-    <ul>
-        {% for measurement in measurements %}
-        <li>
-            <strong>Date:</strong> {{ measurement.created_at }}<br>
-            Chest: {{ measurement.upper_arm_length }}<br>
-            Waist: {{ measurement.lower_arm_length }}<br>
-            Hips: {{ measurement.upper_leg_length }}<br>
-            Arms: {{ measurement.lower_leg_lengths }}<br>
-            Legs: {{ measurement.arm_girth }}
-        </li>
-        {% endfor %}
-    </ul>
-    {% endblock %}
-    
+    <div class="mt-4">
+        <a href="{% url 'home' %}" class="btn btn-secondary">Back to Home</a>
+        <a href="{% url 'delete_measurement' measurement.id %}" class="btn btn-danger">Delete Measurement</a>
+    </div>
+
 </body>
 </html>

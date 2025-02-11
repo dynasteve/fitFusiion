@@ -7,7 +7,6 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.decorators import login_required
 from .forms import SignupForm
 from .forms import MeasurementForm
-from .forms import UploadMeasurementForm, ManualMeasurementForm
 from .models import Measurement
 from django.shortcuts import get_object_or_404
 
@@ -19,7 +18,6 @@ from django.conf.urls.static import static
 
 from django.views.decorators.csrf import csrf_exempt
 from django.core.files.storage import default_storage
-from .forms import UserImage
 from .models import UploadImage  
 from .forms import UploadMeasurementForm, ManualMeasurementForm
 
@@ -89,7 +87,7 @@ def new_measurement(request):
 @login_required
 def upload_measurement(request):
     if request.method == "POST":
-        form = MeasurementForm(request.POST, request.FILES)
+        form = UploadMeasurementForm(request.POST, request.FILES)
         if form.is_valid():
             measurement = form.save(commit=False)
             measurement.user = request.user  # Assign the user
@@ -102,19 +100,24 @@ def upload_measurement(request):
 
     return render(request, "core/upload_measurement.html", {"form": form})
 
+
 @login_required
 def manual_measurement(request):
     if request.method == "POST":
         form = ManualMeasurementForm(request.POST)
         if form.is_valid():
             measurement = form.save(commit=False)
-            measurement.user = request.user
+            measurement.user = request.user  # ? Assign logged-in user
+            measurement.measurement_type = "manual"
             measurement.save()
             return redirect("loading_screen")
+        else:
+            print("? Form errors:", form.errors)  # Debugging
     else:
-        form = MeasurementForm()
+        form = ManualMeasurementForm()
 
     return render(request, "core/manual_measurement.html", {"form": form})
+
 
 @login_required
 def kinect_measurement(request):
@@ -137,9 +140,9 @@ def loading_screen(request):
 
 @login_required
 def measurement_detail(request, measurement_id):
-    measurement = Measurement.objects.filter(user=request.user)
     measurement = get_object_or_404(Measurement, id=measurement_id, user=request.user)
     return render(request, 'core/measurement_detail.html', {'measurement': measurement})
+
 
 @login_required
 def save_measurement(request):
@@ -198,38 +201,25 @@ def upload_result(request):
         return JsonResponse({"message": "File uploaded successfully", "path": path})
     return JsonResponse({"error": "No file received"}, status=400)
     
+    
 @csrf_exempt
 def upload_image(request):
     if request.method == "POST":
-        print("FILES RECEIVED:", request.FILES)  # Debugging
-
         if "image1" not in request.FILES and "image2" not in request.FILES:
             return JsonResponse({"error": "No images uploaded"}, status=400)
 
-        upload_folder = os.path.join(settings.MEDIA_ROOT, "uploads")
-        os.makedirs(upload_folder, exist_ok=True)  # Ensure the folder exists
+        measurement = Measurement(user=request.user, measurement_type="upload")
 
-        saved_files = []
-
-        # Handle image1
         if "image1" in request.FILES:
-            image1 = request.FILES["image1"]
-            file_path1 = os.path.join(upload_folder, image1.name)
-            with open(file_path1, "wb") as destination:
-                for chunk in image1.chunks():
-                    destination.write(chunk)
-            saved_files.append(file_path1)
+            measurement.image1 = request.FILES["image1"]
 
-        # Handle image2
         if "image2" in request.FILES:
-            image2 = request.FILES["image2"]
-            file_path2 = os.path.join(upload_folder, image2.name)
-            with open(file_path2, "wb") as destination:
-                for chunk in image2.chunks():
-                    destination.write(chunk)
-            saved_files.append(file_path2)
+            measurement.image2 = request.FILES["image2"]
 
-        return JsonResponse({"message": "Images uploaded successfully", "files": saved_files})
+        measurement.save()  # ? Now saving to DB
+
+        return JsonResponse({"message": "Images uploaded successfully", "id": measurement.id})
+
 
     
 def image_request(request):  
@@ -247,18 +237,18 @@ def image_request(request):
   
     return render(request, 'image_form.html', {'form': form})
     
-@login_required
-def upload_measurements(request):
-    if request.method == 'POST':
-        form = ManualMeasurementForm(request.POST)
-        if form.is_valid():
-            measurement = form.save(commit=False)
-            measurement.user = request.user
-            measurement.save()
-            return redirect('home')
-    else:
-        form = ManualMeasurementForm()
-    return render(request, 'core/new_measurements.html', {'form': form})
+#@login_required
+#def upload_measurements(request):
+#    if request.method == 'POST':
+#        form = ManualMeasurementForm(request.POST)
+#        if form.is_valid():
+#            measurement = form.save(commit=False)
+#            measurement.user = request.user
+#            measurement.save()
+#            return redirect('home')
+#    else:
+#        form = ManualMeasurementForm()
+#    return render(request, 'core/new_measurements.html', {'form': form})
     
 @login_required
 def view_measurements(request):
