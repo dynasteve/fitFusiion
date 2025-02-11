@@ -1,5 +1,6 @@
 import json
 import os
+import imghdr
 
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, logout, authenticate
@@ -20,7 +21,6 @@ from django.views.decorators.csrf import csrf_exempt
 from django.core.files.storage import default_storage
 from .models import UploadImage  
 from .forms import UploadMeasurementForm, ManualMeasurementForm
-
 
 
 
@@ -61,24 +61,6 @@ def logout_view(request):
     logout(request)
     return redirect('home')
     
-#@login_required
-#def new_measurement(request):
-#    if request.method == "POST":
-#        form = MeasurementForm(request.POST, request.FILES)  # Include request.FILES
-#
-#        if form.is_valid():
-#            measurement = form.save(commit=False)
-#            measurement.user = request.user  # Assign the user
-#            measurement.image1 = form.cleaned_data["image1"]
-#            measurement.image2 = form.cleaned_data["image2"]
-#            measurement.save()  # Save with images
-#
-#            return redirect("loading_screen")
-#
-#    else:
-#        form = MeasurementForm()
-#
-#    return render(request, "core/new_measurement.html", {"form": form})
 
 @login_required
 def new_measurement(request):
@@ -87,18 +69,33 @@ def new_measurement(request):
 @login_required
 def upload_measurement(request):
     if request.method == "POST":
-        form = UploadMeasurementForm(request.POST, request.FILES)
-        if form.is_valid():
-            measurement = form.save(commit=False)
-            measurement.user = request.user  # Assign the user
-            measurement.image1 = request.FILES.get("image1")
-            measurement.image2 = request.FILES.get("image2")
-            measurement.save()
-            return redirect("loading_screen")
-    else:
-        form = MeasurementForm()
+        print("?? Received POST request:", request.POST)
+        print("?? Received FILES:", request.FILES)  
 
-    return render(request, "core/upload_measurement.html", {"form": form})
+        measurement = Measurement(user=request.user, measurement_type="upload")
+
+        def fix_filename(file):
+            """Auto-detect file type and add an extension if missing."""
+            if "." not in file.name:
+                detected_type = imghdr.what(file)  # Detect image type
+                extension = detected_type if detected_type else "jpg"  # Default to .jpg
+                file.name += f".{extension}"  # Assign the correct extension
+            return file
+
+        if "image1" in request.FILES:
+            measurement.image1 = fix_filename(request.FILES["image1"])
+            print("? Image 1 received:", measurement.image1.name)
+
+        if "image2" in request.FILES:
+            measurement.image2 = fix_filename(request.FILES["image2"])
+            print("? Image 2 received:", measurement.image2.name)
+
+        measurement.save()
+        print("? Measurement saved successfully!")
+
+        return redirect("loading_screen")
+
+    return render(request, "core/upload_measurement.html")
 
 
 @login_required

@@ -5,6 +5,7 @@ from .models import Measurement
 from django.db import models  
 from django.forms import fields  
 from .models import UploadImage 
+from django.core.validators import FileExtensionValidator
 
 class MeasurementForm(forms.ModelForm):
     image1 = forms.ImageField(required=False)  # Ensure Django processes files
@@ -49,9 +50,18 @@ class UploadMeasurementForm(forms.ModelForm):
         model = Measurement
         fields = ['image1', 'image2']
 
-class ManualMeasurementForm(forms.ModelForm):
+class UploadMeasurementForm(forms.ModelForm):
+    image1 = forms.ImageField(
+        required=True,
+        validators=[FileExtensionValidator(allowed_extensions=['jpg', 'jpeg', 'png', 'bmp', 'gif', 'tiff', 'webp'])]
+    )
+    image2 = forms.ImageField(
+        required=False,
+        validators=[FileExtensionValidator(allowed_extensions=['jpg', 'jpeg', 'png', 'bmp', 'gif', 'tiff', 'webp'])]
+    )
+
     class Meta:
         model = Measurement
-        exclude = ['user', 'image1', 'image2', 'data', 'created_at', 'measurement_type']
+        fields = ['image1', 'image2']
 
 
