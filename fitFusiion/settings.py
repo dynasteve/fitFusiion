@@ -13,6 +13,9 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 from pathlib import Path
 from .ip_address import get_ip_address
 import sys
+import os
+import shutil
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -134,3 +137,16 @@ MEDIA_ROOT = "/home/stephen/finalYearProject/fitFusiion/media"
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+def clear_media_folders():
+    """Deletes all files in media/upload/ and media/results/ on server startup."""
+    media_dirs = ["media/upload", "media/results"]
+
+    for directory in media_dirs:
+        dir_path = os.path.join(BASE_DIR, directory)
+        if os.path.exists(dir_path):
+            shutil.rmtree(dir_path)  # Deletes the directory and all its contents
+            os.makedirs(dir_path)  # Recreate the empty directory
+            print(f"? Cleared: {dir_path}")
+
+clear_media_folders()  # Run cleanup when Django starts

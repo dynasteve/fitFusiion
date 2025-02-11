@@ -25,6 +25,7 @@ urlpatterns = [
     path("api/upload_result/", upload_result, name="upload_result"),
     path("api/upload_image/", upload_image, name="upload_image"),
     path('', image_request, name = "image-request"),
+    path('api/check_results/<int:measurement_id>/', views.check_results, name='check_results'),
 ] 
 
 if settings.DEBUG:  

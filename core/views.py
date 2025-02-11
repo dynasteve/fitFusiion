@@ -2,6 +2,7 @@ import json
 import os
 import imghdr
 import base64
+import time
 
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, logout, authenticate
@@ -262,4 +263,23 @@ def image_request(request):
 def view_measurements(request):
     measurements = Measurement.objects.filter(user=request.user)
     return render(request, 'core/measurement_detail.html', {'measurements': measurements})
+    
+def check_results(request, measurement_id):
+    """Check if the output files exist in media/results/"""
+    measurement = get_object_or_404(Measurement, id=measurement_id)
+
+    results_dir = os.path.join(settings.MEDIA_ROOT, "results")
+    expected_json = os.path.join(results_dir, f"{measurement_id}.json")
+    expected_images = [os.path.join(results_dir, f"{measurement_id}_1.jpg"),
+                       os.path.join(results_dir, f"{measurement_id}_2.jpg")]
+
+    # Kinect mode only expects a JSON file, Upload mode expects both JSON & images
+    if measurement.measurement_type == "kinect":
+        if os.path.exists(expected_json):
+            return JsonResponse({"status": "ready"})
+    elif measurement.measurement_type == "upload":
+        if os.path.exists(expected_json) and all(os.path.exists(img) for img in expected_images):
+            return JsonResponse({"status": "ready"})
+
+    return JsonResponse({"status": "pending"})
 

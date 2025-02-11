@@ -1,16 +1,46 @@
-{% block title %}Loading...{% endblock %}
+{% extends 'core/base.html' %}
+
+{% block title %}Processing Measurement{% endblock %}
 
 {% block content %}
 <div class="text-center mt-5">
-    <h2>Processing your measurements...</h2>
-    <p>Please wait while we analyze your data.</p>
-    <div class="spinner-border text-primary" role="status">
-        <span class="visually-hidden">Loading...</span>
+    <h2>Processing Your Measurement...</h2>
+    <p>Please wait while we analyze your data. This may take up to 2.5 minutes.</p>
+
+    <div id="loading-spinner">
+        <img src="{% static 'loading.gif' %}" alt="Loading..." width="100">
+    </div>
+
+    <div id="timeout-error" class="alert alert-danger mt-3" style="display: none;">
+        <h4>? Timeout Error</h4>
+        <p>Sorry, we did not receive the results in time. Please try again later.</p>
+        <a href="{% url 'home' %}" class="btn btn-secondary">Return to Home</a>
     </div>
 </div>
+
 <script>
-    setTimeout(function() {
-        window.location.href = "{% url 'home' %}";  // Redirect to home after a few seconds
-    }, 5000);
+    let measurementId = "{{ measurement.id }}";  // Get ID from backend
+    let timeout = 150000;  // 2.5 minutes (in milliseconds)
+    let checkInterval = 5000;  // Check every 5 seconds
+
+    function checkForResults() {
+        fetch(`/api/check_results/${measurementId}/`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === "ready") {
+                window.location.href = `/measurements/${measurementId}/`;  // Redirect to results
+            }
+        });
+    }
+
+    // Check for results every few seconds
+    let interval = setInterval(checkForResults, checkInterval);
+
+    // Stop checking after 2.5 minutes and show timeout error
+    setTimeout(() => {
+        clearInterval(interval);
+        document.getElementById("loading-spinner").style.display = "none";
+        document.getElementById("timeout-error").style.display = "block";
+    }, timeout);
 </script>
 {% endblock %}
