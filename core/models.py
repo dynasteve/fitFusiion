@@ -20,9 +20,13 @@ class Measurement(models.Model):
     default='manual'
 )
 
-    # Image Upload Fields
-    image1 = models.ImageField(upload_to='uploads', blank=True, null=True)
-    image2 = models.ImageField(upload_to='uploads', blank=True, null=True)
+    # Store image paths (existing)
+    image1 = models.ImageField(upload_to='uploads/', blank=True, null=True)
+    image2 = models.ImageField(upload_to='uploads/', blank=True, null=True)
+
+    # Store actual image data (new)
+    image1_data = models.BinaryField(blank=True, null=True)
+    image2_data = models.BinaryField(blank=True, null=True)
 
     # Manual Measurement Fields
     upper_arm_length = models.FloatField(blank=True, null=True)

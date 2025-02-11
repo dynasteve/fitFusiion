@@ -1,4 +1,6 @@
 {% load static %}
+{% load base64_filters %}  <!-- Make sure to load the Base64 filter -->
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -16,57 +18,32 @@
             <p><strong>Date:</strong> {{ measurement.created_at|date:"F d, Y H:i" }}</p>
             <p><strong>Measurement Type:</strong> {{ measurement.get_measurement_type_display }}</p>
 
-            <h5 class="mt-4">Body Measurements</h5>
-            <ul class="list-group">
-                <li class="list-group-item"><strong>Upper Arm Length:</strong> 
-                    {% if measurement.upper_arm_length is not None %} {{ measurement.upper_arm_length }} cm 
-                    {% else %} Not Recorded {% endif %}
-                </li>
-                <li class="list-group-item"><strong>Lower Arm Length:</strong> 
-                    {% if measurement.lower_arm_length is not None %} {{ measurement.lower_arm_length }} cm 
-                    {% else %} Not Recorded {% endif %}
-                </li>
-                <li class="list-group-item"><strong>Upper Leg Length:</strong> 
-                    {% if measurement.upper_leg_length is not None %} {{ measurement.upper_leg_length }} cm 
-                    {% else %} Not Recorded {% endif %}
-                </li>
-                <li class="list-group-item"><strong>Lower Leg Length:</strong> 
-                    {% if measurement.lower_leg_length is not None %} {{ measurement.lower_leg_length }} cm 
-                    {% else %} Not Recorded {% endif %}
-                </li>
-                <li class="list-group-item"><strong>Arm Girth:</strong> 
-                    {% if measurement.arm_girth is not None %} {{ measurement.arm_girth }} cm 
-                    {% else %} Not Recorded {% endif %}
-                </li>
-                <li class="list-group-item"><strong>Torso Length:</strong> 
-                    {% if measurement.torso_length is not None %} {{ measurement.torso_length }} cm 
-                    {% else %} Not Recorded {% endif %}
-                </li>
-                <li class="list-group-item"><strong>Shoulder Girth:</strong> 
-                    {% if measurement.shoulder_girth is not None %} {{ measurement.shoulder_girth }} cm 
-                    {% else %} Not Recorded {% endif %}
-                </li>
-                <li class="list-group-item"><strong>Belly Girth:</strong> 
-                    {% if measurement.belly_girth is not None %} {{ measurement.belly_girth }} cm 
-                    {% else %} Not Recorded {% endif %}
-                </li>
-            </ul>
-
-            {% if measurement.image1 or measurement.image2 %}
-                <h5 class="mt-4">Uploaded Images</h5>
-                <div class="row">
-                    {% if measurement.image1 %}
-                        <div class="col-md-6">
-                            <img src="{{ measurement.image1.url }}" class="img-fluid" alt="Uploaded Image 1">
-                        </div>
-                    {% endif %}
-                    {% if measurement.image2 %}
-                        <div class="col-md-6">
-                            <img src="{{ measurement.image2.url }}" class="img-fluid" alt="Uploaded Image 2">
-                        </div>
-                    {% endif %}
-                </div>
-            {% endif %}
+            <h5 class="mt-4">Uploaded Images</h5>
+            <div class="row">
+                {% if measurement.image1_data %}
+                    <div class="col-md-6">
+                        <img src="data:image/jpeg;base64,{{ measurement.image1_data|b64encode }}" class="img-fluid" alt="Stored Image 1">
+                    </div>
+                {% elif measurement.image1 %}
+                    <div class="col-md-6">
+                        <img src="{{ measurement.image1.url }}" class="img-fluid" alt="Uploaded Image 1">
+                    </div>
+                {% else %}
+                    <p>No Image 1 Uploaded</p>
+                {% endif %}
+                
+                {% if measurement.image2_data %}
+                    <div class="col-md-6">
+                        <img src="data:image/jpeg;base64,{{ measurement.image2_data|b64encode }}" class="img-fluid" alt="Stored Image 2">
+                    </div>
+                {% elif measurement.image2 %}
+                    <div class="col-md-6">
+                        <img src="{{ measurement.image2.url }}" class="img-fluid" alt="Uploaded Image 2">
+                    </div>
+                {% else %}
+                    <p>No Image 2 Uploaded</p>
+                {% endif %}
+            </div>
         </div>
     </div>
 

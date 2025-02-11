@@ -1,6 +1,7 @@
 import json
 import os
 import imghdr
+import base64
 
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, logout, authenticate
@@ -70,7 +71,7 @@ def new_measurement(request):
 def upload_measurement(request):
     if request.method == "POST":
         print("?? Received POST request:", request.POST)
-        print("?? Received FILES:", request.FILES)  
+        print("?? Received FILES:", request.FILES)
 
         measurement = Measurement(user=request.user, measurement_type="upload")
 
@@ -83,12 +84,20 @@ def upload_measurement(request):
             return file
 
         if "image1" in request.FILES:
-            measurement.image1 = fix_filename(request.FILES["image1"])
-            print("? Image 1 received:", measurement.image1.name)
+            image1 = fix_filename(request.FILES["image1"])
+            measurement.image1 = image1  # Save file path
+
+            # ? Read binary and save to database
+            measurement.image1_data = image1.read()
+            print("? Image 1 saved in database.")
 
         if "image2" in request.FILES:
-            measurement.image2 = fix_filename(request.FILES["image2"])
-            print("? Image 2 received:", measurement.image2.name)
+            image2 = fix_filename(request.FILES["image2"])
+            measurement.image2 = image2  # Save file path
+
+            # ? Read binary and save to database
+            measurement.image2_data = image2.read()
+            print("? Image 2 saved in database.")
 
         measurement.save()
         print("? Measurement saved successfully!")
