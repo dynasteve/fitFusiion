@@ -23,6 +23,8 @@ from django.core.files.storage import default_storage
 from .models import UploadImage  
 from .forms import UploadMeasurementForm, ManualMeasurementForm
 
+from django.shortcuts import redirect
+from django.contrib.auth import logout
 
 
 @login_required
@@ -57,10 +59,10 @@ def login_view(request):
     
     return render(request, 'core/login.html', {'form': form})
 
-# Logout View
+@login_required
 def logout_view(request):
     logout(request)
-    return redirect('home')
+    return redirect('login')  # Redirect to login page after logout
     
 
 @login_required

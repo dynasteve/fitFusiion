@@ -4,44 +4,64 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fit-Fusion</title>
+    <title>{% block title %}FitFusion{% endblock %}</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <style>
+        /* Custom Styles */
+        .navbar {
+            background-color: #343a40;
+        }
+        .navbar-brand, .nav-link {
+            color: white !important;
+        }
+        .nav-link:hover {
+            color: #f8f9fa !important;
+        }
+        .container {
+            margin-top: 20px;
+        }
+        .footer {
+            margin-top: 40px;
+            padding: 10px;
+            background: #f8f9fa;
+            text-align: center;
+            font-size: 14px;
+            color: #6c757d;
+        }
+    </style>
 </head>
-<body class="container">
-    <h1 class="mt-5">Welcome to Fit-Fusion</h1>
+<body>
 
-    {% if user.is_authenticated %}
-        <p>Hi, {{ user.username }}!</p>
-        <a href="{% url 'logout' %}" class="btn btn-danger">Logout</a>
-    {% else %}
-        <a href="{% url 'login' %}" class="btn btn-primary">Login</a>
-        <a href="{% url 'signup' %}" class="btn btn-secondary">Sign Up</a>
-    {% endif %}
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'home' %}">FitFusion</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="{% url 'home' %}">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'upload_measurement' %}">Upload Images</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'kinect_measurement' %}">Use Kinect</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'manual_measurement' %}">Manual Input</a></li>
+                    <li class="nav-item"><a class="nav-link text-danger" href="{% url 'logout' %}">Logout</a></li>
+                </ul>
 
-    <a href="{% url 'new_measurement' %}" class="btn btn-success mt-3">+ New Measurement</a>
+            </div>
+        </div>
+    </nav>
 
-    {% extends 'core/base.html' %}
-{% block content %}
-<h2>Past Measurements</h2>
-<a href="{% url 'new_measurement' %}" class="btn btn-primary">New Measurement</a>
-<ul>
-    {% for measurement in measurements %}
-        <li>{{ measurement.created_at }} - {{ measurement.measurement_type }}</li>
-    {% empty %}
-        <li>No measurements yet.</li>
-    {% endfor %}
-</ul>
-{% endblock %}
+    <!-- Page Content -->
+    <div class="container">
+        {% block content %}{% endblock %}
+    </div>
 
-{% for measurement in measurements %}
-    <li>
-        {{ measurement.created_at }} - {{ measurement.measurement_type }} 
-        <a href="{% url 'delete_measurement' measurement.id %}" class="btn btn-danger">Delete</a>
-    </li>
-{% empty %}
-    <li>No measurements yet.</li>
-{% endfor %}
+    <!-- Footer -->
+    <div class="footer">
+        &copy; 2025 FitFusion - All Rights Reserved
+    </div>
 
-
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
