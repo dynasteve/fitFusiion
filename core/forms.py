@@ -8,9 +8,9 @@ from .models import UploadImage
 from django.core.validators import FileExtensionValidator
 
 class MeasurementForm(forms.ModelForm):
-    image1 = forms.ImageField(required=False)  # Ensure Django processes files
+    image1 = forms.ImageField(required=False)
     image2 = forms.ImageField(required=False)
-    
+
     MEASUREMENT_CHOICES = [
         ('upload', 'Upload Images'),
         ('kinect', 'Use Kinect Data'),
@@ -20,18 +20,24 @@ class MeasurementForm(forms.ModelForm):
     measurement_type = forms.ChoiceField(
         choices=MEASUREMENT_CHOICES, widget=forms.RadioSelect, required=True
     )
-    
+
     class Meta:
         model = Measurement
-        fields = ['measurement_type', 'image1', 'image2', 'upper_arm_length', 
-                  'lower_arm_length', 'upper_leg_length', 'lower_leg_length', 
-                  'arm_girth', 'torso_length', 'shoulder_girth', 'belly_girth']
+        fields = [
+            'measurement_type', 'image1', 'image2', 
+            'chest_girth', 'hips_girth', 'waist_girth', 'thigh_girth',
+            'neck_size', 'upper_arm_girth', 'calves_girth', 'upper_arm_length',
+            'lower_arm_length', 'upper_leg_length', 'lower_leg_length', 'torso_length'
+        ]
                   
 class ManualMeasurementForm(forms.ModelForm):
     class Meta:
         model = Measurement
-        fields = ['lower_arm_length', 'upper_leg_length', 'lower_leg_length', 
-                  'arm_girth', 'torso_length', 'shoulder_girth', 'belly_girth']
+        fields = [
+            'chest_girth', 'hips_girth', 'waist_girth', 'thigh_girth',
+            'neck_size', 'upper_arm_girth', 'calves_girth', 'upper_arm_length',
+            'lower_arm_length', 'upper_leg_length', 'lower_leg_length', 'torso_length'
+        ]
 
 class SignupForm(UserCreationForm):
     email = forms.EmailField(required=True)
@@ -45,10 +51,6 @@ class UserImageForm(forms.ModelForm):  # Fix class name
         model = UploadImage  # Fix 'models' ? 'model'
         fields = '__all__'
         
-class UploadMeasurementForm(forms.ModelForm):
-    class Meta:
-        model = Measurement
-        fields = ['image1', 'image2']
 
 class UploadMeasurementForm(forms.ModelForm):
     image1 = forms.ImageField(
@@ -63,5 +65,3 @@ class UploadMeasurementForm(forms.ModelForm):
     class Meta:
         model = Measurement
         fields = ['image1', 'image2']
-
-

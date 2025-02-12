@@ -3,26 +3,60 @@
 {% block title %}Manual Measurement{% endblock %}
 
 {% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card mt-5 shadow">
+            <div class="card-body">
+                <h2 class="text-center">Enter Your Measurements</h2>
+                <form action="{% url 'manual_measurement' %}" method="POST">
+                    {% csrf_token %}
+                    {{ form.non_field_errors }}
 
-    <h2 class="mt-5">Enter Your Measurements</h2>
-    
-        <form action="{% url 'manual_measurement' %}" method="POST">
-            {% csrf_token %}
-            {{ form.non_field_errors }}
+                    <div class="mb-3">
+                        <label class="form-label">Chest Girth (mm):</label> {{ form.chest_girth }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Hips Girth (mm):</label> {{ form.hips_girth }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Waist Girth (mm):</label> {{ form.waist_girth }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Thigh Girth (mm):</label> {{ form.thigh_girth }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Neck Size (mm):</label> {{ form.neck_size }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Upper Arm Girth (mm):</label> {{ form.upper_arm_girth }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Calves Girth (mm):</label> {{ form.calves_girth }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Upper Arm Length (mm):</label> {{ form.upper_arm_length }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Lower Arm Length (mm):</label> {{ form.lower_arm_length }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Upper Leg Length (mm):</label> {{ form.upper_leg_length }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Lower Leg Length (mm):</label> {{ form.lower_leg_length }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Torso Length (mm):</label> {{ form.torso_length }}
+                    </div>
 
-            <p><label>Upper Arm Length:</label> {{ form.upper_arm_length }}</p>
-            <p><label>Lower Arm Length:</label> {{ form.lower_arm_length }}</p>
-            <p><label>Upper Leg Length:</label> {{ form.upper_leg_length }}</p>
-            <p><label>Lower Leg Length:</label> {{ form.lower_leg_length }}</p>
-            <p><label>Arm Girth:</label> {{ form.arm_girth }}</p>
-            <p><label>Torso Length:</label> {{ form.torso_length }}</p>
-            <p><label>Shoulder Girth:</label> {{ form.shoulder_girth }}</p>
-            <p><label>Belly Girth:</label> {{ form.belly_girth }}</p>
+                    <button type="submit" class="btn btn-success w-100">Submit</button>
+                </form>
 
-            <button type="submit" class="btn btn-success mt-3">Submit</button>
-        </form>
-
-
-    <a href="{% url 'new_measurement' %}" class="btn btn-secondary mt-3">Back</a>
-
+                <div class="text-center mt-3">
+                    <a href="{% url 'new_measurement' %}" class="btn btn-secondary">Back</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

@@ -1,4 +1,5 @@
 {% extends 'core/base.html' %}
+{% load static %}
 
 {% block title %}Processing Measurement{% endblock %}
 
@@ -16,31 +17,38 @@
         <p>Sorry, we did not receive the results in time. Please try again later.</p>
         <a href="{% url 'home' %}" class="btn btn-secondary">Return to Home</a>
     </div>
+
+    <div id="success-message" class="alert alert-success mt-3" style="display: none;">
+        <h4>? Kinect Results Received</h4>
+        <p>Your measurements are ready! Click below to view them.</p>
+        <a href="{% url 'home' %}" class="btn btn-primary">View Measurements</a>
+    </div>
 </div>
 
 <script>
-    let measurementId = "{{ measurement.id }}";  // Get ID from backend
-    let timeout = 150000;  // 2.5 minutes (in milliseconds)
-    let checkInterval = 5000;  // Check every 5 seconds
+    let timeout = 150000; // 2.5 minutes in milliseconds
+    let startTime = Date.now();
 
     function checkForResults() {
-        fetch(`/api/check_results/${measurementId}/`)
-        .then(response => response.json())
-        .then(data => {
-            if (data.status === "ready") {
-                window.location.href = `/measurements/${measurementId}/`;  // Redirect to results
-            }
-        });
+        fetch("{% url 'check_kinect_result' %}") 
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === "done") {
+                    document.getElementById("loading-spinner").style.display = "none";
+                    document.getElementById("success-message").style.display = "block";
+                } else {
+                    if (Date.now() - startTime < timeout) {
+                        setTimeout(checkForResults, 5000);  // Check again in 5 seconds
+                    } else {
+                        document.getElementById("loading-spinner").style.display = "none";
+                        document.getElementById("timeout-error").style.display = "block";
+                    }
+                }
+            })
+            .catch(error => console.error("Error checking result file:", error));
     }
 
-    // Check for results every few seconds
-    let interval = setInterval(checkForResults, checkInterval);
-
-    // Stop checking after 2.5 minutes and show timeout error
-    setTimeout(() => {
-        clearInterval(interval);
-        document.getElementById("loading-spinner").style.display = "none";
-        document.getElementById("timeout-error").style.display = "block";
-    }, timeout);
+    // Start checking when page loads
+    setTimeout(checkForResults, 5000);
 </script>
 {% endblock %}

@@ -28,17 +28,23 @@ class Measurement(models.Model):
     image1_data = models.BinaryField(blank=True, null=True)
     image2_data = models.BinaryField(blank=True, null=True)
 
-    # Manual Measurement Fields
+     # New Measurement Fields (stored in mm)
+    chest_girth = models.FloatField(blank=True, null=True)
+    hips_girth = models.FloatField(blank=True, null=True)
+    waist_girth = models.FloatField(blank=True, null=True)
+    thigh_girth = models.FloatField(blank=True, null=True)
+    neck_size = models.FloatField(blank=True, null=True)
+    upper_arm_girth = models.FloatField(blank=True, null=True)
+    calves_girth = models.FloatField(blank=True, null=True)
     upper_arm_length = models.FloatField(blank=True, null=True)
     lower_arm_length = models.FloatField(blank=True, null=True)
     upper_leg_length = models.FloatField(blank=True, null=True)
     lower_leg_length = models.FloatField(blank=True, null=True)
-    arm_girth = models.FloatField(blank=True, null=True)
     torso_length = models.FloatField(blank=True, null=True)
-    shoulder_girth = models.FloatField(blank=True, null=True)
-    belly_girth = models.FloatField(blank=True, null=True)
 
+    # JSON Data Storage
     data = models.JSONField(default=dict)
+
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

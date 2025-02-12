@@ -10,28 +10,46 @@
         <p><strong>Date:</strong> {{ measurement.created_at|date:"F d, Y H:i" }}</p>
         <p><strong>Measurement Type:</strong> {{ measurement.get_measurement_type_display }}</p>
 
-        <h5 class="mt-4">Uploaded Images</h5>
-        <div class="row">
-            {% if measurement.image1_data %}
-                <div class="col-md-6">
-                    <img src="data:image/jpeg;base64,{{ measurement.image1_data|b64encode }}" class="img-fluid" alt="Stored Image 1">
-                </div>
-            {% elif measurement.image1 %}
-                <div class="col-md-6">
-                    <img src="{{ measurement.image1.url }}" class="img-fluid" alt="Uploaded Image 1">
-                </div>
-            {% endif %}
-            
-            {% if measurement.image2_data %}
-                <div class="col-md-6">
-                    <img src="data:image/jpeg;base64,{{ measurement.image2_data|b64encode }}" class="img-fluid" alt="Stored Image 2">
-                </div>
-            {% elif measurement.image2 %}
-                <div class="col-md-6">
-                    <img src="{{ measurement.image2.url }}" class="img-fluid" alt="Uploaded Image 2">
-                </div>
-            {% endif %}
-        </div>
+        <h5 class="mt-4">Body Measurements (mm)</h5>
+        <ul class="list-group">
+            <li class="list-group-item"><strong>Chest Girth:</strong> {{ measurement.chest_girth|default:"Not Recorded" }} mm</li>
+            <li class="list-group-item"><strong>Hips Girth:</strong> {{ measurement.hips_girth|default:"Not Recorded" }} mm</li>
+            <li class="list-group-item"><strong>Waist Girth:</strong> {{ measurement.waist_girth|default:"Not Recorded" }} mm</li>
+            <li class="list-group-item"><strong>Thigh Girth:</strong> {{ measurement.thigh_girth|default:"Not Recorded" }} mm</li>
+            <li class="list-group-item"><strong>Neck Size:</strong> {{ measurement.neck_size|default:"Not Recorded" }} mm</li>
+            <li class="list-group-item"><strong>Upper Arm Girth:</strong> {{ measurement.upper_arm_girth|default:"Not Recorded" }} mm</li>
+            <li class="list-group-item"><strong>Calves Girth:</strong> {{ measurement.calves_girth|default:"Not Recorded" }} mm</li>
+            <li class="list-group-item"><strong>Upper Arm Length:</strong> {{ measurement.upper_arm_length|default:"Not Recorded" }} mm</li>
+            <li class="list-group-item"><strong>Lower Arm Length:</strong> {{ measurement.lower_arm_length|default:"Not Recorded" }} mm</li>
+            <li class="list-group-item"><strong>Upper Leg Length:</strong> {{ measurement.upper_leg_length|default:"Not Recorded" }} mm</li>
+            <li class="list-group-item"><strong>Lower Leg Length:</strong> {{ measurement.lower_leg_length|default:"Not Recorded" }} mm</li>
+            <li class="list-group-item"><strong>Torso Length:</strong> {{ measurement.torso_length|default:"Not Recorded" }} mm</li>
+        </ul>
+
+        {% if measurement.image1 or measurement.image2 %}
+            <h5 class="mt-4">Uploaded Images</h5>
+            <div class="row">
+                {% if measurement.image1_data %}
+                    <div class="col-md-6">
+                        <img src="data:image/jpeg;base64,{{ measurement.image1_data|b64encode }}" class="img-fluid" alt="Stored Image 1">
+                    </div>
+                {% elif measurement.image1 %}
+                    <div class="col-md-6">
+                        <img src="{{ measurement.image1.url }}" class="img-fluid" alt="Uploaded Image 1">
+                    </div>
+                {% endif %}
+                
+                {% if measurement.image2_data %}
+                    <div class="col-md-6">
+                        <img src="data:image/jpeg;base64,{{ measurement.image2_data|b64encode }}" class="img-fluid" alt="Stored Image 2">
+                    </div>
+                {% elif measurement.image2 %}
+                    <div class="col-md-6">
+                        <img src="{{ measurement.image2.url }}" class="img-fluid" alt="Uploaded Image 2">
+                    </div>
+                {% endif %}
+            </div>
+        {% endif %}
     </div>
 </div>
 

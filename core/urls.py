@@ -5,6 +5,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from core.views import list_new_images, upload_result
 from core.views import image_request, upload_image
+from .views import check_results, upload_kinect_result, check_kinect_result
   
 # app_name = 'sampleapp'  
 
@@ -26,6 +27,9 @@ urlpatterns = [
     path("api/upload_image/", upload_image, name="upload_image"),
     path('', image_request, name = "image-request"),
     path('api/check_results/<int:measurement_id>/', views.check_results, name='check_results'),
+    path("api/check_results/", check_results, name="check_results"),
+    path("api/upload_kinect/", upload_kinect_result, name="upload_kinect"),
+    path("api/check_kinect_result/", check_kinect_result, name="check_kinect_result"),
 ] 
 
 if settings.DEBUG:  

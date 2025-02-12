@@ -1,9 +1,11 @@
 import json
+import re
 import os
 import imghdr
 import base64
 import time
 
+from django.contrib import messages
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.forms import AuthenticationForm
@@ -38,13 +40,23 @@ def home(request):
 def signup_view(request):
     if request.method == "POST":
         form = SignupForm(request.POST)
+        print("?? Received POST data:", request.POST)  # Debugging
+
         if form.is_valid():
             user = form.save()
-            login(request, user)  # Log the user in after signup
-            return redirect('home')
+            print("? User Created:", user)  # Debugging
+
+            login(request, user)  # Log in the new user
+            messages.success(request, "Account created successfully!")  # Flash message
+            return redirect('home')  # Redirect to home
+
+        else:
+            print("? Form Errors:", form.errors)  # Debugging
+            messages.error(request, "There was an error with your submission.")  
+
     else:
         form = SignupForm()
-    
+
     return render(request, 'core/signup.html', {'form': form})
 
 # Login View
@@ -282,4 +294,130 @@ def check_results(request, measurement_id):
             return JsonResponse({"status": "ready"})
 
     return JsonResponse({"status": "pending"})
+    
+    
+def process_json_measurement(request, measurement_id):
+    """Reads a JSON file from media/results/ and updates the measurement."""
+    measurement = Measurement.objects.get(id=measurement_id)
 
+    json_path = os.path.join(settings.MEDIA_ROOT, "results", f"{measurement_id}.json")
+
+    if os.path.exists(json_path):
+        with open(json_path, "r") as file:
+            data = json.load(file)
+        
+        # Update measurement fields
+        measurement.chest_girth = data.get("Chest Girth")
+        measurement.hips_girth = data.get("Hips Girth")
+        measurement.waist_girth = data.get("Waist Girth")
+        measurement.thigh_girth = data.get("Thigh Girth")
+        measurement.neck_size = data.get("Neck Size")
+        measurement.upper_arm_girth = data.get("Upper Arm Girth")
+        measurement.calves_girth = data.get("Calves Girth")
+        measurement.upper_arm_length = data.get("Upper Arm Length")
+        measurement.lower_arm_length = data.get("Lower Arm Length")
+        measurement.upper_leg_length = data.get("Upper Leg Length")
+        measurement.lower_leg_length = data.get("Lower Leg Length")
+        measurement.torso_length = data.get("Torso Length")
+
+        measurement.save()
+        return True
+    return False
+
+
+def check_results(request):
+    results_dir = os.path.join(settings.MEDIA_ROOT, "results")
+    found = any(f.endswith(".txt") for f in os.listdir(results_dir))  # Look for .txt files
+    return JsonResponse({"found": found})
+    
+def check_kinect_result(request):
+    """Check if result.txt exists in media/results."""
+    result_path = os.path.join(settings.MEDIA_ROOT, "results", "result.txt")
+    
+    print(f"?? Checking for file: {result_path}")  # Debugging: Check the exact path
+
+    if os.path.exists(result_path):
+        print("? File found!")  # Debugging: File is detected
+
+        result = process_kinect_results(request)  # Process the file
+
+        if "error" in result:
+            print(f"? Error: {result['error']}")  # Debugging: Show error
+            return JsonResponse({"status": "error", "message": result["error"]})
+
+        print("? Kinect results saved!")  # Debugging: Success
+        return JsonResponse({"status": "done", "message": "Kinect results saved", "id": result["id"]})
+    
+    print("? Still waiting for Kinect results...")  # Debugging: File is missing
+    return JsonResponse({"status": "waiting", "message": "Still waiting for Kinect results"})
+
+    
+@csrf_exempt  # Allows the request from an external device
+def upload_kinect_result(request):
+    if request.method == "POST" and request.FILES.get("file"):
+        file = request.FILES["file"]
+        file_path = os.path.join(settings.MEDIA_ROOT, "results", file.name)
+
+        # Save the uploaded file
+        with open(file_path, "wb") as f:
+            for chunk in file.chunks():
+                f.write(chunk)
+
+        return JsonResponse({"message": "Kinect file uploaded successfully", "path": file_path})
+    
+    return JsonResponse({"error": "No file received"}, status=400)
+    
+def process_kinect_results(request):
+    """Read the uploaded Kinect result.txt and save measurements to the database."""
+    result_path = os.path.join(settings.MEDIA_ROOT, "results", "result.txt")
+
+    if not os.path.exists(result_path):
+        return {"error": "No Kinect results found."}
+
+    try:
+        with open(result_path, "r") as file:
+            lines = file.readlines()
+
+        measurement_data = {}
+        pattern = r"([\w\s]+):\s([\d.]+)\smm"
+
+        for line in lines:
+            match = re.match(pattern, line)
+            if match:
+                key = match.group(1).strip().lower().replace(" ", "_")  # Convert to snake_case
+                value = float(match.group(2))  # Convert string to float
+                measurement_data[key] = value
+
+        # Required fields check
+        required_fields = {
+            "chest_girth", "hips_girth", "waist_girth", "thigh_girth",
+            "neck_size", "upper_arm_girth", "calves_girth", "upper_arm_length",
+            "lower_arm_length", "upper_leg_length", "lower_leg_length", "torso_length"
+        }
+
+        if not required_fields.issubset(set(measurement_data.keys())):
+            return {"error": "Missing measurement fields in result.txt"}
+
+        # Save to the database
+        print(f"?? Current User: {request.user}")
+        measurement = Measurement.objects.create(
+            user=request.user,  # Update this to the correct user if necessary
+            measurement_type="kinect",
+            chest_girth=measurement_data["chest_girth"],
+            hips_girth=measurement_data["hips_girth"],
+            waist_girth=measurement_data["waist_girth"],
+            thigh_girth=measurement_data["thigh_girth"],
+            neck_size=measurement_data["neck_size"],
+            upper_arm_girth=measurement_data["upper_arm_girth"],
+            calves_girth=measurement_data["calves_girth"],
+            upper_arm_length=measurement_data["upper_arm_length"],
+            lower_arm_length=measurement_data["lower_arm_length"],
+            upper_leg_length=measurement_data["upper_leg_length"],
+            lower_leg_length=measurement_data["lower_leg_length"],
+            torso_length=measurement_data["torso_length"],
+        )
+
+        return {"status": "success", "id": measurement.id}
+
+    except Exception as e:
+        return {"error": str(e)}
