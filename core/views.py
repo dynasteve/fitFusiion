@@ -4,6 +4,7 @@ import os
 import imghdr
 import base64
 import time
+import shutil
 
 from django.contrib import messages
 from django.shortcuts import render, redirect
@@ -32,6 +33,7 @@ from django.contrib.auth import logout
 
 @login_required
 def home(request):
+    clear_media_folders()
     measurements = Measurement.objects.filter(user=request.user).order_by('-created_at')
     print("Retrieved measurements:", measurements)  # Debugging
     return render(request, 'core/home.html', {'measurements': measurements})
@@ -421,3 +423,14 @@ def process_kinect_results(request):
 
     except Exception as e:
         return {"error": str(e)}
+
+def clear_media_folders():
+    """Deletes all files in media/upload/ and media/results/ on server startup."""
+    media_dirs = ["media/upload", "media/results"]
+
+    for directory in media_dirs:
+        dir_path = os.path.join(settings.BASE_DIR, directory)
+        if os.path.exists(dir_path):
+            shutil.rmtree(dir_path)  # Deletes the directory and all its contents
+            os.makedirs(dir_path)  # Recreate the empty directory
+            print(f"? Cleared: {dir_path}")
