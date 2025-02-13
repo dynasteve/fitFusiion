@@ -6,6 +6,9 @@ import base64
 import time
 import shutil
 
+from django.core.files.storage import default_storage
+from django.core.files.base import ContentFile
+
 from django.contrib import messages
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, logout, authenticate
@@ -92,29 +95,43 @@ def upload_measurement(request):
 
         measurement = Measurement(user=request.user, measurement_type="upload")
 
-        def fix_filename(file):
-            """Auto-detect file type and add an extension if missing."""
+        def fix_filename(file, new_name):
+            """Rename uploaded file to a fixed name (front/side) while keeping its extension."""
             if "." not in file.name:
                 detected_type = imghdr.what(file)  # Detect image type
                 extension = detected_type if detected_type else "jpg"  # Default to .jpg
-                file.name += f".{extension}"  # Assign the correct extension
-            return file
+            else:
+                extension = file.name.split(".")[-1]  # Keep the original extension
 
+            return f"{new_name}.{extension}"
+
+        # ? Process image1 (rename to "front.ext")
         if "image1" in request.FILES:
-            image1 = fix_filename(request.FILES["image1"])
-            measurement.image1 = image1  # Save file path
+            image1 = request.FILES["image1"]
+            new_name1 = fix_filename(image1, "front")
 
-            # ? Read binary and save to database
-            measurement.image1_data = image1.read()
-            print("? Image 1 saved in database.")
+            # Save image to media/uploads/
+            save_path1 = os.path.join("uploads", new_name1)  # ? Use relative path
+            default_storage.save(save_path1, ContentFile(image1.read()))
 
+            # Store in database
+            measurement.image1.name = save_path1
+            measurement.image1_data = image1.read()  # Save as binary
+            print(f"? Image 1 saved: {new_name1}")
+
+        # ? Process image2 (rename to "side.ext")
         if "image2" in request.FILES:
-            image2 = fix_filename(request.FILES["image2"])
-            measurement.image2 = image2  # Save file path
+            image2 = request.FILES["image2"]
+            new_name2 = fix_filename(image2, "side")
 
-            # ? Read binary and save to database
-            measurement.image2_data = image2.read()
-            print("? Image 2 saved in database.")
+            # Save image to media/uploads/
+            save_path2 = os.path.join("uploads", new_name2)  # ? Use relative path
+            default_storage.save(save_path2, ContentFile(image2.read()))
+
+            # Store in database
+            measurement.image2.name = save_path2
+            measurement.image2_data = image2.read()  # Save as binary
+            print(f"? Image 2 saved: {new_name2}")
 
         measurement.save()
         print("? Measurement saved successfully!")
@@ -122,7 +139,6 @@ def upload_measurement(request):
         return redirect("loading_screen")
 
     return render(request, "core/upload_measurement.html")
-
 
 @login_required
 def manual_measurement(request):
@@ -426,11 +442,16 @@ def process_kinect_results(request):
 
 def clear_media_folders():
     """Deletes all files in media/upload/ and media/results/ on server startup."""
-    media_dirs = ["media/upload", "media/results"]
+    media_dirs = ["media/uploads", "media/results"]
 
     for directory in media_dirs:
         dir_path = os.path.join(settings.BASE_DIR, directory)
-        if os.path.exists(dir_path):
-            shutil.rmtree(dir_path)  # Deletes the directory and all its contents
-            os.makedirs(dir_path)  # Recreate the empty directory
-            print(f"? Cleared: {dir_path}")
+        for filename in os.listdir(dir_path):
+            file_path = os.path.join(dir_path, filename)
+            try:
+                if os.path.isfile(file_path) or os.path.islink(file_path):
+                    os.unlink(file_path)
+                elif os.path.isdir(file_path):
+                    shutil.rmtree(file_path)
+            except Exception as e:
+                print(f"Failed to delete {file_path}. Reason: {e}")
